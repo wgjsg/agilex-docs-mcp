@@ -119,7 +119,7 @@ Example:
 
 ## Scope and data
 
-The corpus is built from Document (Docmost) spaces that are marked
+The corpus is built from Docmost spaces that are marked
 **「互联网所有人可访问」** — i.e. already public at <https://kb.agilex.ai>.
 Spaces marked 内部 / 非对外 are **not** reachable: the crawler never authenticates,
 it only uses Docmost's anonymous share endpoints, so internal content cannot leak
