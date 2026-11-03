@@ -1,0 +1,15 @@
+# DeepSeek Harness (DSH) overlay — Cordis patch format.
+# Usage: dsh web --patch "$PWD/examples/agilex-docs.cordis.yml"
+#
+# To keep it permanently, merge the single `insert` below into
+#   $DSH_HOME/cordis.patch.yml                 (all profiles)
+#   $DSH_HOME/profiles/<name>/cordis.patch.yml (one profile)
+# Do not overwrite an existing patch file — it may hold unrelated config.
+
+- insert:
+    - id: agilex-docs
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: agilex-docs
+        transport: streamable-http
+        url: https://service.agilex.ai/agilex-docs/mcp

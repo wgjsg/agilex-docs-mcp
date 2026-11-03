@@ -1,0 +1,9 @@
+{
+  "$comment": "Claude Desktop only speaks stdio, so bridge the remote endpoint with mcp-remote. macOS: ~/Library/Application Support/Claude/claude_desktop_config.json — Windows: %APPDATA%\\Claude\\claude_desktop_config.json",
+  "mcpServers": {
+    "agilex-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://service.agilex.ai/agilex-docs/mcp"]
+    }
+  }
+}

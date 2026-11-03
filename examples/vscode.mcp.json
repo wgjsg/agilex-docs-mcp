@@ -1,0 +1,9 @@
+{
+  "$comment": "VS Code Copilot Chat — save as .vscode/mcp.json. Note: VS Code uses the top-level key 'servers', not 'mcpServers'.",
+  "servers": {
+    "agilex-docs": {
+      "type": "http",
+      "url": "https://service.agilex.ai/agilex-docs/mcp"
+    }
+  }
+}

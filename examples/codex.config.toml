@@ -1,0 +1,7 @@
+# ~/.codex/config.toml
+# Add an MCP server to Codex CLI / ChatGPT desktop app / Codex IDE extension.
+# Equivalent one-liner:
+#   codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp
+
+[mcp_servers.agilex-docs]
+url = "https://service.agilex.ai/agilex-docs/mcp"
