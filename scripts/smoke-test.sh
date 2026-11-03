@@ -3,56 +3,133 @@
 # initialize -> tools/list -> tools/call (search_docs) -> tools/call (get_doc)
 #
 # Usage: ./scripts/smoke-test.sh [endpoint]
+#
+# Requires: curl, python3 (stdlib only).
 set -euo pipefail
 
 EP="${1:-https://service.agilex.ai/agilex-docs/mcp}"
-ACCEPT='Accept: application/json, text/event-stream'
-CT='Content-Type: application/json'
-
-# Stateless server, but send a session header anyway: some clients require the
-# server to echo one back, and this keeps the script honest about the handshake.
-SID="smoke-$(date +%s)"
 
 say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
+# POST one JSON-RPC frame and print the JSON result (SSE frames unwrapped).
 rpc() {
   local body="$1"
   curl -sS --max-time 30 -X POST "$EP" \
-    -H "$CT" -H "$ACCEPT" -H "Mcp-Session-Id: $SID" \
-    -d "$body"
+    -H 'Content-Type: application/json' \
+    -H 'Accept: application/json, text/event-stream' \
+    -d "$body" \
+  | python3 -c '
+import json, sys
+raw = sys.stdin.read()
+# The server may answer as SSE ("event: message\ndata: {...}") or plain JSON.
+for line in raw.splitlines():
+    line = line.strip()
+    if line.startswith("data:"):
+        line = line[5:].strip()
+    if not line or line.startswith("event:") or line.startswith("id:"):
+        continue
+    try:
+        msg = json.loads(line)
+    except json.JSONDecodeError:
+        continue
+    if "error" in msg:
+        print("RPC ERROR:", json.dumps(msg["error"], ensure_ascii=False), file=sys.stderr)
+        sys.exit(1)
+    print(json.dumps(msg.get("result", {}), ensure_ascii=False))
+    break
+else:
+    print("no JSON-RPC frame in response:", raw[:400], file=sys.stderr)
+    sys.exit(1)
+'
 }
 
-# Responses may come back as SSE ("data: {...}") or plain JSON; normalise to JSON.
-strip() { sed -n 's/^data: //p;t;p' | grep -v '^$'; }
+# Tool payloads arrive as {"content":[{"type":"text","text":"<json string>"}]}.
+# Print the inner payload as JSON.
+payload() {
+  python3 -c '
+import json, sys
+res = json.load(sys.stdin)
+items = res.get("content") or []
+if not items:
+    print(json.dumps(res, ensure_ascii=False)); sys.exit(0)
+text = items[0].get("text", "")
+try:
+    print(json.dumps(json.loads(text), ensure_ascii=False))
+except json.JSONDecodeError:
+    print(json.dumps({"raw": text}, ensure_ascii=False))
+'
+}
 
 say "initialize"
 INIT='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"agilex-smoke","version":"1.0"}}}'
-INIT_OUT="$(rpc "$INIT" | strip)"
-echo "$INIT_OUT" | head -c 600; echo
-echo "$INIT_OUT" | grep -q '"serverInfo"' || { echo "FAIL: no serverInfo"; exit 1; }
+INIT_OUT="$(rpc "$INIT")"
+echo "$INIT_OUT" | python3 -c '
+import json, sys
+r = json.load(sys.stdin)
+si = r.get("serverInfo") or {}
+print("server:", si.get("name"), si.get("version"), "| protocol:", r.get("protocolVersion"))
+print("instructions:", (r.get("instructions") or "").splitlines()[0])
+assert si.get("name"), "no serverInfo.name"
+'
+echo "  -> instructions present, serverInfo parsed"
 
 say "tools/list"
 TOOLS='{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
-TOOLS_OUT="$(rpc "$TOOLS" | strip)"
-NAMES="$(echo "$TOOLS_OUT" | grep -o '"name":"[a-z_]*"' | sed 's/.*:"//;s/"//' | sort -u | tr '\n' ' ')"
-echo "tools: $NAMES"
-for want in search_docs get_doc list_docs list_spaces; do
-  echo "$NAMES" | grep -q "$want" || { echo "FAIL: missing tool $want"; exit 1; }
-done
+TOOLS_OUT="$(rpc "$TOOLS")"
+python3 -c '
+import json, sys
+r = json.load(sys.stdin)
+tools = r.get("tools", [])
+names = sorted(t["name"] for t in tools)
+print("tools:", " ".join(names))
+want = {"search_docs", "get_doc", "list_docs", "list_spaces"}
+missing = want - set(names)
+assert not missing, "missing tools: %s" % sorted(missing)
+for t in tools:
+    assert t.get("description"), "%s has no description" % t.get("name")
+    assert t.get("inputSchema"), "%s has no inputSchema" % t.get("name")
+print("all four tools expose description + inputSchema")
+' <<<"$TOOLS_OUT"
 
 say "tools/call search_docs"
 SEARCH='{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_docs","arguments":{"query":"piper CAN 波特率","limit":2}}}'
-SEARCH_OUT="$(rpc "$SEARCH" | strip)"
-echo "$SEARCH_OUT" | head -c 900; echo
-echo "$SEARCH_OUT" | grep -q '"doc_id"' || { echo "FAIL: no doc_id in search result"; exit 1; }
-
-DOC_ID="$(echo "$SEARCH_OUT" | grep -o '"doc_id":"[^"]*"' | head -1 | sed 's/.*:"//;s/"//')"
-echo "first hit: $DOC_ID"
+PAYLOAD="$(rpc "$SEARCH" | payload)"
+DOC_ID="$(python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+hits = d.get("results") or []
+print("  hits: %d" % len(hits), file=sys.stderr)
+for h in hits:
+    print("  - %-46s %s" % (h["title"][:46], h["score"]), file=sys.stderr)
+assert hits, "search returned no hits"
+first = hits[0]
+for k in ("doc_id", "title", "url", "score", "chars"):
+    assert first.get(k), "hit missing %s" % k
+print(first["doc_id"])
+' <<<"$PAYLOAD")"
+echo "  doc_id: $DOC_ID"
 
 say "tools/call get_doc (paginated)"
 GETDOC="{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"get_doc\",\"arguments\":{\"doc_id\":\"$DOC_ID\",\"max_chars\":1200}}}"
-GETDOC_OUT="$(rpc "$GETDOC" | strip)"
-echo "$GETDOC_OUT" | head -c 700; echo
-echo "$GETDOC_OUT" | grep -q '"truncated"' || { echo "FAIL: no truncation metadata"; exit 1; }
+rpc "$GETDOC" | payload | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+print("  title:", d.get("title"))
+print("  chars:", d.get("chars"), "| returned:", len(d.get("content") or ""))
+print("  truncated:", d.get("truncated"), "| next_offset:", d.get("next_offset"))
+assert "truncated" in d, "no truncation metadata"
+assert d.get("next_offset"), "truncated reply has no next_offset"
+assert d.get("url"), "reply has no source url"
+'
 
-say "PASS — endpoint is serving 4 tools and paginating correctly"
+say "tools/call list_spaces"
+SPACES='{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"list_spaces","arguments":{}}}'
+rpc "$SPACES" | payload | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+sp = d.get("spaces") or []
+print("  spaces: %d" % len(sp))
+assert sp, "no public spaces"
+'
+
+say "PASS — endpoint serves 4 tools, paginates, and exposes source URLs"
