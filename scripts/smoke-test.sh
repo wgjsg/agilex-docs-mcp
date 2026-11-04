@@ -8,8 +8,12 @@
 set -euo pipefail
 
 EP="${1:-https://service.agilex.ai/agilex-docs/mcp}"
-PROTO="2025-06-18"
-SID="smoke-$(date +%s)-$$"
+# Initialised from the server, not invented: this endpoint is stateless and does
+# not allocate a session id, so sending a made-up one is wrong. PROTO is taken
+# from the initialize result (the negotiated version), SID from its response
+# header when the server actually issues one.
+PROTO=""
+SID=""
 
 say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
@@ -18,11 +22,13 @@ say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 # protocol version (the latter is required on every request after initialize).
 rpc() {
   local body="$1"
+  local hdr=()
+  [ -n "$SID" ] && hdr+=(-H "Mcp-Session-Id: $SID")
+  [ -n "$PROTO" ] && hdr+=(-H "MCP-Protocol-Version: $PROTO")
   curl -sS --max-time 30 -X POST "$EP" \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json, text/event-stream' \
-    -H "Mcp-Session-Id: $SID" \
-    -H "MCP-Protocol-Version: $PROTO" \
+    "${hdr[@]}" \
     -d "$body" \
   | python3 -c '
 import json, sys
@@ -68,7 +74,42 @@ except json.JSONDecodeError:
 
 say "initialize"
 INIT='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"agilex-smoke","version":"1.0"}}}'
-INIT_OUT="$(rpc "$INIT")"
+# Capture headers too: the session id (if the server issues one) and the
+# negotiated protocol version come from here, not from guesses.
+INIT_HDR="$(mktemp)"
+INIT_OUT="$(curl -sS --max-time 30 -D "$INIT_HDR" -X POST "$EP" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d "$INIT" \
+| python3 -c '
+import json, sys
+raw = sys.stdin.read()
+for line in raw.splitlines():
+    line = line.strip()
+    if line.startswith("data:"):
+        line = line[5:].strip()
+    if not line or line.startswith("event:") or line.startswith("id:"):
+        continue
+    try:
+        msg = json.loads(line)
+    except json.JSONDecodeError:
+        continue
+    if "error" in msg:
+        print("RPC ERROR:", json.dumps(msg["error"], ensure_ascii=False), file=sys.stderr)
+        sys.exit(1)
+    print(json.dumps(msg.get("result", {}), ensure_ascii=False))
+    break
+else:
+    print("no JSON-RPC frame in response:", raw[:400], file=sys.stderr)
+    sys.exit(1)
+')"
+SID="$(sed -n 's/^[Mm]cp-[Ss]ession-[Ii]d: *\(.*\)$/\1/p' "$INIT_HDR" | tr -d '\r' | head -1)"
+rm -f "$INIT_HDR"
+PROTO="$(echo "$INIT_OUT" | python3 -c '
+import json, sys
+print(json.load(sys.stdin).get("protocolVersion") or "")
+')"
+[ -n "$PROTO" ] || { echo "FAIL: initialize did not return protocolVersion"; exit 1; }
 echo "$INIT_OUT" | python3 -c '
 import json, sys
 r = json.load(sys.stdin)
@@ -77,13 +118,24 @@ print("server:", si.get("name"), si.get("version"), "| protocol:", r.get("protoc
 print("instructions:", (r.get("instructions") or "").splitlines()[0])
 assert si.get("name"), "no serverInfo.name"
 '
-echo "  -> instructions present, serverInfo parsed"
+echo "  -> session id: ${SID:-<none, stateless>}"
 
 say "notifications/initialized"
-# 规范要求客户端在 initialize 之后发这条通知；无状态服务容忍缺失，
-# 但验证脚本应模拟真实客户端，否则客户端相关缺陷测不出来。
-rpc '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null || true
-echo "  sent"
+# A notification has no id, so the server answers 202 with an empty body —
+# it must NOT be parsed as a normal response. Verify status + empty body, and
+# never mask a real failure with "|| true".
+NOTIF_HDR="$(mktemp)"
+NOTIF_CODE="$(curl -sS --max-time 30 -o /tmp/.smoke-notif-body -w '%{http_code}' -D "$NOTIF_HDR" \
+  -X POST "$EP" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' || echo "000")"
+rm -f "$NOTIF_HDR" /tmp/.smoke-notif-body
+echo "  HTTP $NOTIF_CODE (expect 202, empty body)"
+case "$NOTIF_CODE" in
+  202|200|204) ;;
+  *) echo "FAIL: notifications/initialized returned $NOTIF_CODE"; exit 1 ;;
+esac
 
 say "tools/list"
 TOOLS='{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
@@ -179,7 +231,6 @@ MISS='{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"get_doc","
 RAW="$(curl -sS --max-time 30 -X POST "$EP" \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
-  -H "Mcp-Session-Id: $SID" \
   -H "MCP-Protocol-Version: $PROTO" \
   -d "$MISS")"
 python3 -c '

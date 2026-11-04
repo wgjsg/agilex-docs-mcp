@@ -20,7 +20,7 @@ https://service.agilex.ai/agilex-docs/mcp
 
 ## 覆盖内容
 
-263 篇有正文的公开文档（其中 242 篇正文超过 500 字符，可据以操作）、26 个空间；另有 84 个目录页或尚未编写的条目，不参与检索。覆盖以下产品线：
+263 篇有正文的公开文档（其中 242 篇正文超过 500 字符，仅表示文本较充实，不代表内容已核验）、26 个空间；另有 84 个目录页或尚未编写的条目，不参与检索。覆盖以下产品线：
 
 `piper` · `pika` · `nero` · `ranger` · `limo` · `scout` · `bunker` · `hunter` · `tracer` · `umr` · `cobot_magic` · `aloha`
 
@@ -172,5 +172,5 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 
 - 说明页：<https://service.agilex.ai/agilex-docs/>
 - ModelScope 魔搭：<https://modelscope.cn/mcp/servers/Vicious/agilex-docs>
-- 官方 MCP Registry：`ai.agilex.service/docs`（v1.2.0）
+- 官方 MCP Registry：`ai.agilex.service/docs`（v1.2.1）
 - 公开仓库：<https://github.com/wgjsg/agilex-docs-mcp>

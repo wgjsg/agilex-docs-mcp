@@ -374,7 +374,7 @@ failure mode here: a user could follow PiPER flashing steps on a PIKA.
 | | |
 |---|---|
 | Pages with content | **263** |
-| Of those, ≥500 chars of prose | 242 (`substantial` in `/health`) |
+| Of those, ≥500 chars of prose | 242 (`substantial` in `/health`; a length statistic, not a content check) |
 | Container / empty entries | 84 (excluded from search) |
 | Spaces | **26** |
 | Characters | ~3.0 M |
@@ -458,7 +458,7 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 | Directory | Entry | Link |
 |---|---|---|
 | **ModelScope 魔搭** | Chinese listing, Cursor one-click install | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
-| **Official MCP Registry** | `ai.agilex.service/docs` v1.2.0 | <https://registry.modelcontextprotocol.io/?q=agilex> |
+| **Official MCP Registry** | `ai.agilex.service/docs` v1.2.1 | <https://registry.modelcontextprotocol.io/?q=agilex> |
 | **Glama** | TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
 | **GitHub** | this repository, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
 
