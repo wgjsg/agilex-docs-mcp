@@ -20,7 +20,7 @@ https://service.agilex.ai/agilex-docs/mcp
 
 ## 覆盖内容
 
-约 346 篇公开文档、26 个空间，覆盖以下产品线：
+263 篇有正文的公开文档、26 个空间（另有 84 个目录页或尚未编写的条目，不参与检索），覆盖以下产品线：
 
 `piper` · `pika` · `nero` · `ranger` · `limo` · `scout` · `bunker` · `hunter` · `tracer` · `umr` · `cobot_magic` · `aloha`
 
@@ -38,7 +38,7 @@ https://service.agilex.ai/agilex-docs/mcp
 |---|---|---|
 | `search_docs` | 全文检索，先用它定位 | `query`（建议带产品名）、`limit`、`space` |
 | `find_in_doc` | 在一篇长文档里定位段落，直接返回绝对 `offset` | `doc_id`、`query`、`limit` |
-| `get_doc` | 读整页 Markdown，支持分页 | `doc_id`、`max_chars`、`offset` |
+| `get_doc` | 读整页 Markdown，支持分页 | `doc_id`、`max_chars`（按请求返回，上限 120000）、`offset` |
 | `list_docs` | 列某个空间的文档 | `space`、`limit`、`offset` |
 | `list_spaces` | 列公开空间与文档数 | — |
 
@@ -143,6 +143,12 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 
 > 我要给 piper 机械臂写一个 CAN 控制脚本。先用 agilex-docs 的 `search_docs` 查「piper CAN 报文」，
 > 再用 `get_doc` 读命中的手册，按手册里的帧格式和波特率写代码，并在注释里给出手册链接。
+
+## 关于原文链接与登录
+
+知识库对本平台访客开启了邮箱验证码登录（用于访问留痕）。**MCP 本身不受影响**：
+服务端读取的是公开分享接口，无需登录即可检索与读取。但返回的 `url` 是给人看的网页，
+浏览器打开时需完成一次访客登录才能看到原文。
 
 ## 限制
 

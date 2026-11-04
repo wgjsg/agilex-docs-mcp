@@ -89,7 +89,7 @@ the right one without reading the schema first.
 |---|---|---|
 | `search_docs` | Full-text search. **Start here.** Locate before reading. | `query` (include the product name), `limit` (1–25, default 8), `space` (optional) |
 | `find_in_doc` | Locate a passage inside one long manual; returns absolute `offset` | `doc_id`, `query`, `limit` (1–10, default 5) |
-| `get_doc` | Read one page as Markdown, paginated | `doc_id`, `max_chars` (default 20 000, max 120 000), `offset` |
+| `get_doc` | Read one page as Markdown, paginated | `doc_id`, `max_chars` (default 20 000, honoured as requested, max 120 000), `offset` |
 | `list_docs` | Inventory of a single space | `space` (optional), `limit` (1–300, default 50), `offset` |
 | `list_spaces` | All public spaces with page counts | — |
 
@@ -101,6 +101,11 @@ snippet. Then use `find_in_doc` to jump to the passage you need and read it with
 Manuals open with a cover page and preface, so reading from offset 0 rarely
 answers a specific question — that is why the search-then-locate-then-read path
 is the recommended one rather than `get_doc` alone.
+
+`max_chars` is honoured as requested (1–120 000), and the applied value is echoed
+back as `max_chars` in the response. There used to be an undocumented 2000-character
+floor; a caller paging in 1000-character steps would then re-read overlapping text
+without any indication, so it was removed.
 
 ### Why `find_in_doc` exists
 
@@ -116,7 +121,7 @@ them only dilutes the ranking. This is measurable — on the RANGER MINI 3.0 man
 top, while `query="CAN 波特率"` returned 2 with "3.2 CAN接口协议" on top.
 
 Scoring is weighted by corpus-wide document frequency, not raw term count: `can`
-appears in 138 of 346 pages (weight 1.25) while `波特率` appears in 39
+appears in 138 pages (weight 1.25) while `波特率` appears in 39
 (weight 2.29). If the query contains a distinctive term that the page does not
 contain, the tool returns zero hits and says so — otherwise English manuals
 produced 76 meaningless `can` matches for the query "CAN 波特率". A query made
@@ -335,11 +340,18 @@ reached through this endpoint.
 
 | | |
 |---|---|
-| Pages | **346** |
+| Pages with content | **263** |
+| Container / empty entries | 84 (excluded from search) |
 | Spaces | **26** |
 | Characters | ~3.0 M |
 | Refresh | daily 05:20 Asia/Shanghai |
 | Languages | Chinese and English |
+
+The knowledge base also contains **folder pages and placeholder pages with no body
+text**. These are excluded from search results: a folder titled "PIKA固件升级" would
+otherwise outrank real content for that query and return an empty page. They remain
+listable through `list_docs`, and `get_doc` on one returns `empty: true` with a hint
+rather than 0 characters.
 
 New public spaces are added automatically; withdrawn shares are removed on the
 next refresh.
