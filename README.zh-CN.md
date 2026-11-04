@@ -172,5 +172,5 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 
 - 说明页：<https://service.agilex.ai/agilex-docs/>
 - ModelScope 魔搭：<https://modelscope.cn/mcp/servers/Vicious/agilex-docs>
-- 官方 MCP Registry：`ai.agilex.service/docs`（v1.1.0）
+- 官方 MCP Registry：`ai.agilex.service/docs`（v1.2.0）
 - 公开仓库：<https://github.com/wgjsg/agilex-docs-mcp>
