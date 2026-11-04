@@ -342,6 +342,20 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 
 ---
 
+## Where to find it
+
+| Directory | Entry |
+|---|---|
+| Official MCP Registry | `ai.agilex.service/docs` — search `agilex` on <https://registry.modelcontextprotocol.io> |
+| Glama | [connector page](https://glama.ai/mcp/connectors/ai.agilex.service/docs) — TDQS **A (4.3/5)** |
+| ModelScope 魔搭 | [Vicious/agilex-docs](https://modelscope.cn/mcp/servers/Vicious/agilex-docs) — search `agilex` (中文条目，标签 `机器人` / `机械臂` / `文档检索`) |
+| awesome-remote-mcp-servers | [PR #3724](https://github.com/punkpeye/awesome-remote-mcp-servers/pull/3724) |
+| MCP Hub 中国 | [issue #36](https://github.com/mengjian-github/mcp-cn/issues/36) |
+
+The endpoint is fixed, so no directory listing is required to use it.
+
+---
+
 ## Feedback
 
 Missing or wrong document → contact AgileX support through
