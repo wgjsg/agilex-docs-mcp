@@ -42,8 +42,9 @@ https://service.agilex.ai/agilex-docs/mcp
 | `list_docs` | 列某个空间的文档 | `space`、`limit`、`offset` |
 | `list_spaces` | 列公开空间与文档数 | — |
 
-推荐路径：`search_docs` 拿到 `doc_id` → 文档较长（`chars` > 2 万）就用 `find_in_doc`
-定位到具体段落 → `get_doc(doc_id, offset=…)` 读那一段。
+推荐路径：`search_docs` 拿到 `doc_id` → 用 `find_in_doc` 定位到该文档里的相关段落
+（`query` 传概念词，不要重复产品名）→ `get_doc(doc_id, offset=…)` 读那一段。
+手册开头通常是封面与前言，直接读第 1 页很少能回答具体问题。
 若 `get_doc` 返回 `truncated: true`，用 `next_offset` 续读。
 
 ## 客户端配置

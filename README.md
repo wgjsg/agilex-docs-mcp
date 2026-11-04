@@ -94,16 +94,26 @@ the right one without reading the schema first.
 | `list_spaces` | All public spaces with page counts | — |
 
 `search_docs` returns `doc_id`, `title`, `space`, `url`, `score`, `chars` and a
-snippet. Feed `doc_id` into `get_doc`. If the response has `truncated: true`,
-call `get_doc` again with `next_offset`.
+snippet. Then use `find_in_doc` to jump to the passage you need and read it with
+`get_doc(doc_id, offset=…)`. If the response has `truncated: true`, call
+`get_doc` again with `next_offset`.
+
+Manuals open with a cover page and preface, so reading from offset 0 rarely
+answers a specific question — that is why the search-then-locate-then-read path
+is the recommended one rather than `get_doc` alone.
 
 ### Why `find_in_doc` exists
 
-26% of the corpus is longer than 10 000 characters, 13% exceeds 20 000, and the
-longest page is 162 000. Locating one CAN frame table in that by paginating with
-`get_doc` costs nine round trips. `find_in_doc` scores paragraphs and returns
-their absolute offsets, so a single `get_doc(doc_id, offset=…)` lands on the
-table.
+13% of the corpus needs pagination and the longest page is 162 000 characters;
+locating one CAN frame table in that by paging with `get_doc` costs nine round
+trips. `find_in_doc` scores paragraphs and returns their absolute offsets, so a
+single `get_doc(doc_id, offset=…)` lands on the table.
+
+Pass the *concept* as `query`, not the product name. Terms that already appear in
+the page title are ignored: `search_docs` picked the page by them, so repeating
+them only dilutes the ranking. This is measurable — on the RANGER MINI 3.0 manual,
+`query="RANGER MINI 3.0 CAN 波特率"` returned 44 passages with "1.1 产品列表" on
+top, while `query="CAN 波特率"` returned 2 with "3.2 CAN接口协议" on top.
 
 Scoring is weighted by corpus-wide document frequency, not raw term count: `can`
 appears in 138 of 346 pages (weight 1.25) while `波特率` appears in 39
