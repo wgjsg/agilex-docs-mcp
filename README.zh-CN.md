@@ -15,8 +15,8 @@ https://service.agilex.ai/agilex-docs/mcp
 | 传输 | Streamable HTTP（单端点、无状态） |
 | 认证 | 无需认证、无需 API Key |
 | 限流 | 每 IP 每分钟 60 次、每天 3000 次 |
-| 数据范围 | 仅「互联网所有人可访问」的公开空间，不含内部文档 |
-| 更新 | 每日 05:20（北京时间）自动同步索引 |
+| 数据范围 | 仅公开可访问的文档，不含内部资料 |
+| 更新 | 每日 05:20（北京时间）自动更新 |
 
 ## 覆盖内容
 
@@ -146,11 +146,12 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 ## 限制
 
 - **只读**：没有任何写操作，不会控制设备。
-- **图片不内联**：Docmost 附件链接带短时签名，快照会失效，图片以「（图：图注）」形式出现；需要看图请打开页面链接。
-- **词面匹配**：BM25 + 中文 bigram，不是语义检索，换个说法可能更准。
+- **图片不内联**：原页面的附件链接带短时签名，因此图片以「（图：图注）」形式出现；需要看图请打开页面链接。
+- **词面匹配**：不是语义检索，换个说法可能更准。
 
 ## 相关链接
 
 - 说明页：<https://service.agilex.ai/agilex-docs/>
+- ModelScope 魔搭：<https://modelscope.cn/mcp/servers/Vicious/agilex-docs>
+- 官方 MCP Registry：`ai.agilex.service/docs`（v1.1.0）
 - 公开仓库：<https://github.com/wgjsg/agilex-docs-mcp>
-- 官方 MCP Registry：`ai.agilex.service/docs`

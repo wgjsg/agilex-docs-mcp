@@ -14,10 +14,9 @@ Point your AI coding assistant at this server **before** writing integration cod
 for AgileX hardware, so it consults the real manual instead of guessing baud rates,
 frame formats or pinouts.
 
-> **This repository is the public contract, not the implementation.**
-> It documents the endpoint, the tool signatures and every client configuration.
-> The indexing service itself stays private, the same way Cloudflare, Sentry and
-> Linear publish their remote MCP servers.
+> **This repository documents the public interface.** It covers the endpoint,
+> the tool signatures and every client configuration. The indexing service that
+> backs it is operated by AgileX and is not part of this repository.
 
 ---
 
@@ -170,7 +169,7 @@ only of generic terms (e.g. just `CAN`) still returns matches.
 }
 ```
 
-`url` always points at the original Docmost page — cite it so the user can verify.
+`url` always points at the original page — cite it so the user can verify.
 
 ---
 
@@ -319,10 +318,10 @@ and cite URLs, the workflow usually happens without any extra prompting.
 
 ## Scope and data
 
-The corpus is built from Docmost spaces marked **「互联网所有人可访问」** — already
-public at <https://kb.agilex.ai>. Spaces marked 内部 / 非对外 are **not** reachable:
-the crawler only uses Docmost's anonymous share endpoints and never authenticates,
-so internal content cannot leak even through a bug.
+The corpus covers product documentation that is publicly accessible at
+<https://kb.agilex.ai>. Internal spaces are excluded: the service reads only
+publicly shared content and never authenticates, so internal documents cannot be
+reached through this endpoint.
 
 | | |
 |---|---|
@@ -332,7 +331,8 @@ so internal content cannot leak even through a bug.
 | Refresh | daily 05:20 Asia/Shanghai |
 | Languages | Chinese and English |
 
-New public spaces appear automatically; revoked shares drop out on the next sync.
+New public spaces are added automatically; withdrawn shares are removed on the
+next refresh.
 
 ---
 
@@ -351,11 +351,10 @@ Higher quota or a dedicated endpoint: contact AgileX (see [Feedback](#feedback))
 ## Limits
 
 - **Read-only.** No write tools; nothing here can move a robot.
-- **Images are not inlined.** Docmost signs attachment URLs with a short TTL, so a
-  snapshot would ship dead links. Images render as `（图：caption）`; open the page
-  `url` to view them.
+- **Images are not inlined.** Attachment URLs on the source pages are signed with a
+  short TTL, so images render as `（图：caption）`; open the page `url` to view them.
 - **Binary attachments** (PDF/XLSX) in public spaces are not parsed — page bodies only.
-- **Lexical matching**, not semantic. BM25 + CJK bigrams. Rephrase if a term misses.
+- **Lexical matching**, not semantic. Rephrase if a term misses.
 - **One product family per query** works best; cross-product questions need
   multiple searches.
 
@@ -398,17 +397,14 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 
 ## Where to find it
 
-| Directory | Status | Direct link |
+| Directory | Entry | Link |
 |---|---|---|
-| **GitHub** | public, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
-| **ModelScope 魔搭** | listed | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
-| **Official MCP Registry** | `ai.agilex.service/docs` v1.0.2 | <https://registry.modelcontextprotocol.io/v0.1/servers?search=agilex> |
-| **Glama** | listed, TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
-| **awesome-remote-mcp-servers** | PR open | <https://github.com/punkpeye/awesome-remote-mcp-servers/pull/3724> |
-| **MCP Hub 中国** | submitted | <https://github.com/mengjian-github/mcp-cn/issues/36> |
+| **ModelScope 魔搭** | Chinese listing, Cursor one-click install | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
+| **Official MCP Registry** | `ai.agilex.service/docs` v1.1.0 | <https://registry.modelcontextprotocol.io/?q=agilex> |
+| **Glama** | TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
+| **GitHub** | this repository, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
 
-Search term inside any directory: `agilex` (or `agilex-docs`). On ModelScope the
-tags `机械臂` / `文档检索` also match.
+Search term inside any directory: `agilex`.
 
 The endpoint is fixed, so no directory listing is required to use it.
 
