@@ -32,17 +32,19 @@ https://service.agilex.ai/agilex-docs/mcp
 | 技术贴 | SDK 对接、遥操作、录制回放等实战教程 |
 | 售后 FAQ | 报错码、异常排查、常见故障处理 |
 
-## 工具（4 个，全部只读）
+## 工具（5 个，全部只读）
 
 | 工具 | 用途 | 参数 |
 |---|---|---|
 | `search_docs` | 全文检索，先用它定位 | `query`（建议带产品名）、`limit`、`space` |
+| `find_in_doc` | 在一篇长文档里定位段落，直接返回绝对 `offset` | `doc_id`、`query`、`limit` |
 | `get_doc` | 读整页 Markdown，支持分页 | `doc_id`、`max_chars`、`offset` |
 | `list_docs` | 列某个空间的文档 | `space`、`limit`、`offset` |
 | `list_spaces` | 列公开空间与文档数 | — |
 
-`search_docs` 返回 `doc_id` / `title` / `url` / `score` / `snippet`；把 `doc_id` 交给 `get_doc`。
-若返回 `truncated: true`，用 `next_offset` 续读。
+推荐路径：`search_docs` 拿到 `doc_id` → 文档较长（`chars` > 2 万）就用 `find_in_doc`
+定位到具体段落 → `get_doc(doc_id, offset=…)` 读那一段。
+若 `get_doc` 返回 `truncated: true`，用 `next_offset` 续读。
 
 ## 客户端配置
 

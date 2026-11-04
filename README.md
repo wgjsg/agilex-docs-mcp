@@ -83,12 +83,13 @@ Full per-client instructions: [docs/CLIENTS.md](docs/CLIENTS.md).
 
 ## Tools
 
-Four read-only tools. The names are deliberately `verb_noun` so a model can pick
+Five read-only tools. The names are deliberately `verb_noun` so a model can pick
 the right one without reading the schema first.
 
 | Tool | Purpose | Parameters |
 |---|---|---|
 | `search_docs` | Full-text search. **Start here.** Locate before reading. | `query` (include the product name), `limit` (1–25, default 8), `space` (optional) |
+| `find_in_doc` | Locate a passage inside one long manual; returns absolute `offset` | `doc_id`, `query`, `limit` (1–10, default 5) |
 | `get_doc` | Read one page as Markdown, paginated | `doc_id`, `max_chars` (default 20 000, max 120 000), `offset` |
 | `list_docs` | Inventory of a single space | `space` (optional), `limit` (1–300, default 50), `offset` |
 | `list_spaces` | All public spaces with page counts | — |
@@ -96,6 +97,21 @@ the right one without reading the schema first.
 `search_docs` returns `doc_id`, `title`, `space`, `url`, `score`, `chars` and a
 snippet. Feed `doc_id` into `get_doc`. If the response has `truncated: true`,
 call `get_doc` again with `next_offset`.
+
+### Why `find_in_doc` exists
+
+26% of the corpus is longer than 10 000 characters, 13% exceeds 20 000, and the
+longest page is 162 000. Locating one CAN frame table in that by paginating with
+`get_doc` costs nine round trips. `find_in_doc` scores paragraphs and returns
+their absolute offsets, so a single `get_doc(doc_id, offset=…)` lands on the
+table.
+
+Scoring is weighted by corpus-wide document frequency, not raw term count: `can`
+appears in 138 of 346 pages (weight 1.25) while `波特率` appears in 39
+(weight 2.29). If the query contains a distinctive term that the page does not
+contain, the tool returns zero hits and says so — otherwise English manuals
+produced 76 meaningless `can` matches for the query "CAN 波特率". A query made
+only of generic terms (e.g. just `CAN`) still returns matches.
 
 ### Response shape
 
@@ -129,6 +145,28 @@ call `get_doc` again with `next_offset`.
   "truncated": true,
   "next_offset": 2000,
   "content": "..."
+}
+```
+
+```jsonc
+// find_in_doc(doc_id="01a06659-…", query="波特率")
+{
+  "doc_id": "01a06659-2d4e-7029-bc64-63f9352b34a6",
+  "title": "PIPER X 用户手册(CN)",
+  "url": "https://kb.agilex.ai/s/agx-robot-arm-products-cn-en/p/pWVjLJsYc0",
+  "chars": 13264,
+  "query": "波特率",
+  "count": 2,
+  "hits": [
+    {
+      "offset": 7553,                 // ← feed straight into get_doc
+      "heading": "3.2 CAN接口协议",
+      "score": 45.79,
+      "matched": ["波特"],
+      "excerpt": "…通讯波特率为500K，报文格式采用MOTOROLA格式…"
+    }
+  ],
+  "hint": "用 get_doc(doc_id, offset=hit.offset) 读这一段前后；offset 是全文绝对位置。"
 }
 ```
 
@@ -186,7 +224,7 @@ field as global guidance, so the search-then-read workflow is already in place.
 ```
 
 Reload the window (`Ctrl+Shift+P` → Reload Window). Settings → MCP should list
-`agilex-docs` with 4 tools.
+`agilex-docs` with 5 tools.
 </details>
 
 <details>
@@ -335,8 +373,11 @@ curl -s -X POST https://service.agilex.ai/agilex-docs/mcp \
   -H 'Accept: application/json, text/event-stream' \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}' | jq
 
-# full round trip (initialize → tools/list → tools/call)
+# full round trip (initialize → tools/list → search → find_in_doc → get_doc)
 ./scripts/smoke-test.sh
+
+# the Chinese README as plain text (same source as README.zh-CN.md)
+curl -s https://service.agilex.ai/agilex-docs/readme.md | head
 ```
 
 ---
@@ -345,6 +386,7 @@ curl -s -X POST https://service.agilex.ai/agilex-docs/mcp \
 
 ```
 README.md                    this file
+README.zh-CN.md              Chinese version; also served at /agilex-docs/readme.md
 server.json                  official MCP Registry manifest
 LICENSE                      MIT (documentation + manifest)
 docs/CLIENTS.md              per-client setup, long form

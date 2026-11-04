@@ -7,8 +7,8 @@ https://service.agilex.ai/agilex-docs/mcp
 ```
 
 Streamable HTTP, single endpoint, stateless. No API key, no local process.
-After connecting, the model should see four tools:
-`search_docs` / `get_doc` / `list_docs` / `list_spaces`.
+After connecting, the model should see five tools:
+`search_docs` / `find_in_doc` / `get_doc` / `list_docs` / `list_spaces`.
 
 Sections below are ordered by how common each client is — start at the top.
 
@@ -95,7 +95,7 @@ Or `.cursor/mcp.json` (project) / `~/.cursor/mcp.json` (global):
 ```
 
 Reload the window if the entry does not show up. Settings → MCP should list
-`agilex-docs` with 4 tools. Tool namespace in agent mode is `user-agilex-docs`
+`agilex-docs` with 5 tools. Tool namespace in agent mode is `user-agilex-docs`
 (user config) or `project-0-<workspace>-agilex-docs` (project config).
 
 ---

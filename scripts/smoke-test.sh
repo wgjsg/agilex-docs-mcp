@@ -82,13 +82,13 @@ r = json.load(sys.stdin)
 tools = r.get("tools", [])
 names = sorted(t["name"] for t in tools)
 print("tools:", " ".join(names))
-want = {"search_docs", "get_doc", "list_docs", "list_spaces"}
+want = {"search_docs", "find_in_doc", "get_doc", "list_docs", "list_spaces"}
 missing = want - set(names)
 assert not missing, "missing tools: %s" % sorted(missing)
 for t in tools:
     assert t.get("description"), "%s has no description" % t.get("name")
     assert t.get("inputSchema"), "%s has no inputSchema" % t.get("name")
-print("all four tools expose description + inputSchema")
+print("all five tools expose description + inputSchema")
 ' <<<"$TOOLS_OUT"
 
 say "tools/call search_docs"
@@ -122,8 +122,24 @@ assert d.get("next_offset"), "truncated reply has no next_offset"
 assert d.get("url"), "reply has no source url"
 '
 
+say "tools/call find_in_doc"
+FIND="{\"jsonrpc\":\"2.0\",\"id\":5,\"method\":\"tools/call\",\"params\":{\"name\":\"find_in_doc\",\"arguments\":{\"doc_id\":\"$DOC_ID\",\"query\":\"CAN\",\"limit\":2}}}"
+rpc "$FIND" | payload | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+hits = d.get("hits") or []
+print("  hits:", d.get("count"))
+for h in hits[:2]:
+    print("  - offset=%-6s %s" % (h["offset"], (h.get("heading") or "")[:40]))
+assert hits, "find_in_doc returned no hits for 'CAN'"
+assert "chars" in d, "no chars field"
+h = hits[0]
+assert 0 <= h["offset"] < d["chars"], h
+assert h.get("excerpt"), "hit has no excerpt"
+'
+
 say "tools/call list_spaces"
-SPACES='{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"list_spaces","arguments":{}}}'
+SPACES='{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"list_spaces","arguments":{}}}'
 rpc "$SPACES" | payload | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
@@ -132,4 +148,4 @@ print("  spaces: %d" % len(sp))
 assert sp, "no public spaces"
 '
 
-say "PASS — endpoint serves 4 tools, paginates, and exposes source URLs"
+say "PASS — endpoint serves 5 tools, locates passages, paginates, and exposes source URLs"
