@@ -43,7 +43,7 @@ Clients are listed in order of how common they are. Pick one.
 
 | # | Client | Setup |
 |---|---|---|
-| 1 | **Claude Code** | `claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp` |
+| 1 | **Claude Code** | `claude mcp add --scope user --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp` |
 | 2 | **Codex CLI** | `codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp` |
 | 3 | **Cursor** | [one-click install](cursor://anysphere.cursor-deeplink/mcp/install?name=agilex-docs&config=eyJ1cmwiOiJodHRwczovL3NlcnZpY2UuYWdpbGV4LmFpL2FnaWxleC1kb2NzL21jcCJ9), or the JSON below |
 | 4 | **VS Code / Copilot** | `Ctrl+Shift+P` → `MCP: Add Server` → HTTP → paste the URL |
@@ -51,7 +51,7 @@ Clients are listed in order of how common they are. Pick one.
 
 ```bash
 # 1) Claude Code — all projects
-claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
+claude mcp add --scope user --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
 
 # 2) Codex CLI — writes ~/.codex/config.toml
 codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp
@@ -90,7 +90,7 @@ the right one without reading the schema first.
 | `search_docs` | Full-text search. **Start here.** Locate before reading. | `query` (include the product name), `limit` (1–25, default 8), `space` (optional) |
 | `find_in_doc` | Locate a passage inside one long manual; returns absolute `offset` | `doc_id`, `query`, `limit` (1–10, default 5) |
 | `get_doc` | Read one page as Markdown, paginated | `doc_id`, `max_chars` (default 20 000, honoured as requested, max 120 000), `offset` |
-| `list_docs` | Inventory of a single space | `space` (optional), `limit` (1–300, default 50), `offset` |
+| `list_docs` | Inventory of a single space | `space` (optional), `limit` (1–300, default 100), `offset` (≥0) |
 | `list_spaces` | All public spaces with page counts | — |
 
 `search_docs` returns `doc_id`, `title`, `space`, `url`, `score`, `chars` and a
@@ -106,6 +106,29 @@ is the recommended one rather than `get_doc` alone.
 back as `max_chars` in the response. There used to be an undocumented 2000-character
 floor; a caller paging in 1000-character steps would then re-read overlapping text
 without any indication, so it was removed.
+
+### Field semantics
+
+`count` means different things in different tools, deliberately:
+
+| Tool | `count` | Also returned |
+|---|---|---|
+| `search_docs` | number of results in this reply | `results[]` |
+| `list_docs` | number of docs in this page | `offset`, `docs[]` (no total — use `list_spaces`) |
+| `find_in_doc` | **total passages matched** | `returned`, `matched_terms`, `missing_terms` |
+
+`find_in_doc(limit=1)` can therefore return `count: 24` with one hit — `returned`
+tells you what is in the array. `matched_terms` / `missing_terms` make partial
+matches explicit instead of silently ignoring words the page does not contain.
+
+Numeric parameters declare their bounds in the schema: `limit` 1–25 (search),
+1–10 (find_in_doc), 1–300 (list_docs); `max_chars` 1–120000; `offset` ≥ 0.
+An out-of-range value is a validation error, not a silent clamp.
+
+A result whose title carries a `【未发】` / `【暂不对外】` marker is still
+searchable — whether it is published is the documentation owner's call, and the
+code does not blacklist by keyword — but the entry carries `status_note` so a
+model does not cite unreleased material as settled.
 
 ### Why `find_in_doc` exists
 
@@ -195,7 +218,7 @@ only of generic terms (e.g. just `CAN`) still returns matches.
 
 ```bash
 # all projects
-claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
+claude mcp add --scope user --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
 
 # this project only (writes .mcp.json, can be committed)
 claude mcp add --scope project --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
@@ -351,6 +374,7 @@ failure mode here: a user could follow PiPER flashing steps on a PIKA.
 | | |
 |---|---|
 | Pages with content | **263** |
+| Of those, ≥500 chars of prose | 242 (`substantial` in `/health`) |
 | Container / empty entries | 84 (excluded from search) |
 | Spaces | **26** |
 | Characters | ~3.0 M |

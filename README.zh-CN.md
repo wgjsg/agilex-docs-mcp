@@ -20,7 +20,7 @@ https://service.agilex.ai/agilex-docs/mcp
 
 ## 覆盖内容
 
-263 篇有正文的公开文档、26 个空间（另有 84 个目录页或尚未编写的条目，不参与检索），覆盖以下产品线：
+263 篇有正文的公开文档（其中 242 篇正文超过 500 字符，可据以操作）、26 个空间；另有 84 个目录页或尚未编写的条目，不参与检索。覆盖以下产品线：
 
 `piper` · `pika` · `nero` · `ranger` · `limo` · `scout` · `bunker` · `hunter` · `tracer` · `umr` · `cobot_magic` · `aloha`
 
@@ -45,6 +45,14 @@ https://service.agilex.ai/agilex-docs/mcp
 查询里点名产品（如 `pika 固件升级`）时，只返回该产品的文档；若该产品没有收录
 这个主题，返回空结果并提示未覆盖，不会改用其他产品的资料代替。
 
+字段语义：`find_in_doc` 的 `count` 是**总命中段数**，`returned` 才是本次返回条数，
+另有 `matched_terms` / `missing_terms` 说明哪些词真的命中；`search_docs` 与
+`list_docs` 的 `count` 则是本次返回条数。数值参数在 schema 里带范围（`limit` 1–25 /
+1–10 / 1–300，`max_chars` 1–120000，`offset` ≥ 0），越界是校验错误而不是静默截断。
+
+标题带「未发 / 暂不对外」标记的条目仍可检索（是否对外由资料负责人决定），
+结果会附 `status_note`，以免把未发布内容当作定稿引用。
+
 推荐路径：`search_docs` 拿到 `doc_id` → 用 `find_in_doc` 定位到该文档里的相关段落
 （`query` 传概念词，不要重复产品名）→ `get_doc(doc_id, offset=…)` 读那一段。
 手册开头通常是封面与前言，直接读第 1 页很少能回答具体问题。
@@ -58,7 +66,7 @@ https://service.agilex.ai/agilex-docs/mcp
 
 ```bash
 # 用户级（所有项目可用）
-claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
+claude mcp add --scope user --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
 
 # 仅当前项目（写入 .mcp.json，可提交到仓库共享）
 claude mcp add --scope project --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
@@ -158,6 +166,7 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 - **只读**：没有任何写操作，不会控制设备。
 - **图片不内联**：原页面的附件链接带短时签名，因此图片以「（图：图注）」形式出现；需要看图请打开页面链接。
 - **词面匹配**：不是语义检索，换个说法可能更准。
+- **引用链未收录**：文档内链接指向的 45 个目标不在任何公开分享范围内，MCP 无法读取；需资料负责人决定是否扩大分享。
 
 ## 相关链接
 

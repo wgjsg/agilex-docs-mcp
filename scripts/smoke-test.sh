@@ -8,15 +8,21 @@
 set -euo pipefail
 
 EP="${1:-https://service.agilex.ai/agilex-docs/mcp}"
+PROTO="2025-06-18"
+SID="smoke-$(date +%s)-$$"
 
 say() { printf '\n\033[1m== %s\033[0m\n' "$*"; }
 
 # POST one JSON-RPC frame and print the JSON result (SSE frames unwrapped).
+# Sends the headers a conforming client sends: session id and the negotiated
+# protocol version (the latter is required on every request after initialize).
 rpc() {
   local body="$1"
   curl -sS --max-time 30 -X POST "$EP" \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json, text/event-stream' \
+    -H "Mcp-Session-Id: $SID" \
+    -H "MCP-Protocol-Version: $PROTO" \
     -d "$body" \
   | python3 -c '
 import json, sys
@@ -72,6 +78,12 @@ print("instructions:", (r.get("instructions") or "").splitlines()[0])
 assert si.get("name"), "no serverInfo.name"
 '
 echo "  -> instructions present, serverInfo parsed"
+
+say "notifications/initialized"
+# 规范要求客户端在 initialize 之后发这条通知；无状态服务容忍缺失，
+# 但验证脚本应模拟真实客户端，否则客户端相关缺陷测不出来。
+rpc '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null || true
+echo "  sent"
 
 say "tools/list"
 TOOLS='{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}'
@@ -148,4 +160,44 @@ print("  spaces: %d" % len(sp))
 assert sp, "no public spaces"
 '
 
-say "PASS — endpoint serves 5 tools, locates passages, paginates, and exposes source URLs"
+say "tools/call list_docs"
+LIST='{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"list_docs","arguments":{"limit":3}}}'
+rpc "$LIST" | payload | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+docs = d.get("docs") or []
+print("  docs:", len(docs), "| offset:", d.get("offset"))
+assert docs, "list_docs returned nothing"
+for x in docs:
+    for k in ("doc_id", "title", "space", "url", "chars"):
+        assert k in x, "doc entry missing %s" % k
+'
+
+say "negative: unknown doc_id must be isError"
+# 业务失败必须是工具执行错误（isError=true），不能静默返回空内容
+MISS='{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"get_doc","arguments":{"doc_id":"no-such-doc"}}}'
+RAW="$(curl -sS --max-time 30 -X POST "$EP" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -H "Mcp-Session-Id: $SID" \
+  -H "MCP-Protocol-Version: $PROTO" \
+  -d "$MISS")"
+python3 -c '
+import json, sys
+raw = sys.argv[1]
+for line in raw.splitlines():
+    line = line.strip()
+    if line.startswith("data:"):
+        line = line[5:].strip()
+    if not line.startswith("{"):
+        continue
+    msg = json.loads(line)
+    res = msg.get("result") or {}
+    print("  isError:", res.get("isError"))
+    assert res.get("isError") is True, "missing doc must set isError=true"
+    break
+else:
+    sys.exit("no JSON-RPC frame for the negative case")
+' "$RAW"
+
+say "PASS — endpoint serves 5 tools, locates passages, paginates, exposes source URLs, and errors loudly"

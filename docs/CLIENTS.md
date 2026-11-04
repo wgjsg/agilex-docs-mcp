@@ -14,7 +14,7 @@ Sections below are ordered by how common each client is — start at the top.
 
 | # | Client | Fastest path |
 |---|---|---|
-| 1 | **Claude Code** | `claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp` |
+| 1 | **Claude Code** | `claude mcp add --scope user --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp` |
 | 2 | **Codex CLI** | `codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp` |
 | 3 | **Cursor** | [one-click install](cursor://anysphere.cursor-deeplink/mcp/install?name=agilex-docs&config=eyJ1cmwiOiJodHRwczovL3NlcnZpY2UuYWdpbGV4LmFpL2FnaWxleC1kb2NzL21jcCJ9) |
 | 4 | **VS Code / Copilot** | `Ctrl+Shift+P` → `MCP: Add Server` → HTTP → paste the URL |
@@ -29,7 +29,7 @@ Sections below are ordered by how common each client is — start at the top.
 
 ```bash
 # all projects
-claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
+claude mcp add --scope user --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
 
 # this project only — writes .mcp.json, safe to commit and share
 claude mcp add --scope project --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
