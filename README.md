@@ -170,14 +170,14 @@ only of generic terms (e.g. just `CAN`) still returns matches.
   "url": "https://kb.agilex.ai/s/agx-robot-arm-products-cn-en/p/pWVjLJsYc0",
   "chars": 13264,
   "query": "波特率",
-  "count": 2,
+  "count": 1,
   "hits": [
     {
-      "offset": 7553,                 // ← feed straight into get_doc
-      "heading": "3.2 CAN接口协议",
-      "score": 45.79,
-      "matched": ["波特"],
-      "excerpt": "…通讯波特率为500K，报文格式采用MOTOROLA格式…"
+      "offset": 12101,                // ← feed straight into get_doc
+      "heading": "6 机械臂CAN协议",
+      "score": 45.85,
+      "matched": ["波特", "特率"],
+      "excerpt": "…通讯波特率为1000K，报文格式采用MOTOROLA(MSB)格式…"
     }
   ],
   "hint": "用 get_doc(doc_id, offset=hit.offset) 读这一段前后；offset 是全文绝对位置。"
@@ -338,6 +338,16 @@ The corpus covers product documentation that is publicly accessible at
 publicly shared content and never authenticates, so internal documents cannot be
 reached through this endpoint.
 
+MCP access therefore does not depend on the visitor login on the knowledge base.
+Search and reading work anonymously; only the human-facing page `url` redirects
+to a visitor login (that gate exists for access logging, not authorization).
+
+When a query names a product (`pika 固件升级`, `ranger CAN 波特率`), results are
+restricted to that product's documents. If the product has not documented the
+topic, the reply is an empty result set with a hint saying so — it never falls
+back to another product's manual. Cross-product fallback is the dangerous
+failure mode here: a user could follow PiPER flashing steps on a PIKA.
+
 | | |
 |---|---|
 | Pages with content | **263** |
@@ -388,11 +398,13 @@ Higher quota or a dedicated endpoint: contact AgileX (see [Feedback](#feedback))
 # health
 curl -s https://service.agilex.ai/agilex-docs/health | jq
 
-# MCP handshake
+# MCP handshake — the reply is text/event-stream, so strip the "data: " prefix
+# before piping to jq (piping SSE straight into jq fails with a parse error)
 curl -s -X POST https://service.agilex.ai/agilex-docs/mcp \
   -H 'Content-Type: application/json' \
   -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}' | jq
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1"}}}' \
+  | sed -n 's/^data: //p' | jq '.result.serverInfo'
 
 # full round trip (initialize → tools/list → search → find_in_doc → get_doc)
 ./scripts/smoke-test.sh

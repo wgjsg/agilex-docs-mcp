@@ -42,6 +42,9 @@ https://service.agilex.ai/agilex-docs/mcp
 | `list_docs` | 列某个空间的文档 | `space`、`limit`、`offset` |
 | `list_spaces` | 列公开空间与文档数 | — |
 
+查询里点名产品（如 `pika 固件升级`）时，只返回该产品的文档；若该产品没有收录
+这个主题，返回空结果并提示未覆盖，不会改用其他产品的资料代替。
+
 推荐路径：`search_docs` 拿到 `doc_id` → 用 `find_in_doc` 定位到该文档里的相关段落
 （`query` 传概念词，不要重复产品名）→ `get_doc(doc_id, offset=…)` 读那一段。
 手册开头通常是封面与前言，直接读第 1 页很少能回答具体问题。
