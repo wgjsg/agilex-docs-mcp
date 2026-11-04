@@ -46,7 +46,34 @@ https://service.agilex.ai/agilex-docs/mcp
 
 ## 客户端配置
 
-### Cursor
+按主流程度排序。选一个即可，其余留作参考。
+
+### 1. Claude Code
+
+```bash
+# 用户级（所有项目可用）
+claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
+
+# 仅当前项目（写入 .mcp.json，可提交到仓库共享）
+claude mcp add --scope project --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
+
+claude mcp list
+```
+
+### 2. Codex CLI
+
+```bash
+codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp
+```
+
+或写入 `~/.codex/config.toml`：
+
+```toml
+[mcp_servers.agilex-docs]
+url = "https://service.agilex.ai/agilex-docs/mcp"
+```
+
+### 3. Cursor
 
 项目根目录 `.cursor/mcp.json`（全局用 `~/.cursor/mcp.json`）：
 
@@ -60,51 +87,10 @@ https://service.agilex.ai/agilex-docs/mcp
 }
 ```
 
-### Claude Code
+或点
+[Cursor 一键安装](cursor://anysphere.cursor-deeplink/mcp/install?name=agilex-docs&config=eyJ1cmwiOiJodHRwczovL3NlcnZpY2UuYWdpbGV4LmFpL2FnaWxleC1kb2NzL21jcCJ9)。
 
-```bash
-claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
-```
-
-### Codex CLI
-
-```bash
-codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp
-```
-
-或写入 `~/.codex/config.toml`：
-
-```toml
-[mcp_servers.agilex-docs]
-url = "https://service.agilex.ai/agilex-docs/mcp"
-```
-
-### DeepSeek Harness
-
-```yaml
-- insert:
-    - id: agilex-docs
-      name: '@deepseek-ai/dsh-mcp-client'
-      config:
-        serverName: agilex-docs
-        transport: streamable-http
-        url: https://service.agilex.ai/agilex-docs/mcp
-```
-
-### Claude Desktop / 只支持 stdio 的客户端
-
-```json
-{
-  "mcpServers": {
-    "agilex-docs": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://service.agilex.ai/agilex-docs/mcp"]
-    }
-  }
-}
-```
-
-### VS Code（Copilot Chat）
+### 4. VS Code（Copilot Chat）
 
 `.vscode/mcp.json`（注意顶层键是 `servers`）：
 
@@ -119,9 +105,34 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 }
 ```
 
-### 魔搭 / Cherry Studio
+### 5. Claude Desktop / 只支持 stdio 的客户端
+
+```json
+{
+  "mcpServers": {
+    "agilex-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://service.agilex.ai/agilex-docs/mcp"]
+    }
+  }
+}
+```
+
+### 6. Cherry Studio / 魔搭
 
 在客户端的 MCP 服务器设置里选 **streamableHttp** 类型，填入上面的端点地址即可。
+
+### 7. DeepSeek Harness
+
+```yaml
+- insert:
+    - id: agilex-docs
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: agilex-docs
+        transport: streamable-http
+        url: https://service.agilex.ai/agilex-docs/mcp
+```
 
 ## 使用建议
 

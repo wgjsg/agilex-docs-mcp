@@ -40,22 +40,32 @@ you only need the URL.
 
 ## Quick start
 
+Clients are listed in order of how common they are. Pick one.
+
+| # | Client | Setup |
+|---|---|---|
+| 1 | **Claude Code** | `claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp` |
+| 2 | **Codex CLI** | `codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp` |
+| 3 | **Cursor** | [one-click install](cursor://anysphere.cursor-deeplink/mcp/install?name=agilex-docs&config=eyJ1cmwiOiJodHRwczovL3NlcnZpY2UuYWdpbGV4LmFpL2FnaWxleC1kb2NzL21jcCJ9), or the JSON below |
+| 4 | **VS Code / Copilot** | `Ctrl+Shift+P` → `MCP: Add Server` → HTTP → paste the URL |
+| 5 | Anything stdio-only | `npx -y mcp-remote https://service.agilex.ai/agilex-docs/mcp` |
+
 ```bash
-# Claude Code
+# 1) Claude Code — all projects
 claude mcp add --transport http agilex-docs https://service.agilex.ai/agilex-docs/mcp
 
-# Codex CLI  (writes ~/.codex/config.toml)
+# 2) Codex CLI — writes ~/.codex/config.toml
 codex mcp add agilex-docs --url https://service.agilex.ai/agilex-docs/mcp
 ```
 
-Cursor — one click:
+Cursor one-click:
 
 ```
 cursor://anysphere.cursor-deeplink/mcp/install?name=agilex-docs&config=eyJ1cmwiOiJodHRwczovL3NlcnZpY2UuYWdpbGV4LmFpL2FnaWxleC1kb2NzL21jcCJ9
 ```
 
-Any client that reads `mcpServers` (Claude Desktop, Cline, Windsurf, Cherry Studio,
-Continue, Zed, LibreChat, Dify …):
+Any client that reads `mcpServers` (Cursor, Claude Desktop, Cline, Windsurf,
+Cherry Studio, Continue, Zed, LibreChat, Dify …):
 
 ```json
 {
@@ -129,25 +139,6 @@ call `get_doc` again with `next_offset`.
 ## Client configuration
 
 <details open>
-<summary><b>Cursor</b></summary>
-
-`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json` globally:
-
-```json
-{
-  "mcpServers": {
-    "agilex-docs": {
-      "url": "https://service.agilex.ai/agilex-docs/mcp"
-    }
-  }
-}
-```
-
-Reload the window (`Ctrl+Shift+P` → Reload Window). Settings → MCP should list
-`agilex-docs` with 4 tools.
-</details>
-
-<details>
 <summary><b>Claude Code</b></summary>
 
 ```bash
@@ -180,42 +171,22 @@ field as global guidance, so the search-then-read workflow is already in place.
 </details>
 
 <details>
-<summary><b>DeepSeek Harness (DSH)</b></summary>
+<summary><b>Cursor</b></summary>
 
-DSH connects through `@deepseek-ai/dsh-mcp-client`, configured as a Cordis overlay:
-
-```yaml
-- insert:
-    - id: agilex-docs
-      name: '@deepseek-ai/dsh-mcp-client'
-      config:
-        serverName: agilex-docs
-        transport: streamable-http
-        url: https://service.agilex.ai/agilex-docs/mcp
-```
-
-```bash
-dsh web --patch "$PWD/examples/agilex-docs.cordis.yml"
-```
-
-Tools appear as `mcp__agilex-docs__search_docs`.
-</details>
-
-<details>
-<summary><b>Claude Desktop (stdio bridge)</b></summary>
+`.cursor/mcp.json` in the project, or `~/.cursor/mcp.json` globally:
 
 ```json
 {
   "mcpServers": {
     "agilex-docs": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://service.agilex.ai/agilex-docs/mcp"]
+      "url": "https://service.agilex.ai/agilex-docs/mcp"
     }
   }
 }
 ```
 
-Quit and reopen the app completely after saving.
+Reload the window (`Ctrl+Shift+P` → Reload Window). Settings → MCP should list
+`agilex-docs` with 4 tools.
 </details>
 
 <details>
@@ -238,10 +209,51 @@ Or `Ctrl+Shift+P` → **MCP: Add Server** → HTTP → paste the URL.
 </details>
 
 <details>
+<summary><b>Claude Desktop (stdio bridge)</b></summary>
+
+Claude Desktop only speaks stdio, so bridge the endpoint with `mcp-remote`:
+
+```json
+{
+  "mcpServers": {
+    "agilex-docs": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://service.agilex.ai/agilex-docs/mcp"]
+    }
+  }
+}
+```
+
+Quit and reopen the app completely after saving.
+</details>
+
+<details>
 <summary><b>Cherry Studio</b></summary>
 
 Settings → MCP Servers → Add → type `streamableHttp`, URL as above.
 Cherry Studio also accepts the `mcpServers` JSON directly.
+</details>
+
+<details>
+<summary><b>DeepSeek Harness (DSH)</b></summary>
+
+DSH connects through `@deepseek-ai/dsh-mcp-client`, configured as a Cordis overlay:
+
+```yaml
+- insert:
+    - id: agilex-docs
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: agilex-docs
+        transport: streamable-http
+        url: https://service.agilex.ai/agilex-docs/mcp
+```
+
+```bash
+dsh web --patch "$PWD/examples/agilex-docs.cordis.yml"
+```
+
+Tools appear as `mcp__agilex-docs__search_docs`.
 </details>
 
 <details>
@@ -344,13 +356,17 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 
 ## Where to find it
 
-| Directory | Entry |
-|---|---|
-| Official MCP Registry | `ai.agilex.service/docs` — search `agilex` on <https://registry.modelcontextprotocol.io> |
-| Glama | [connector page](https://glama.ai/mcp/connectors/ai.agilex.service/docs) — TDQS **A (4.3/5)** |
-| ModelScope 魔搭 | [Vicious/agilex-docs](https://modelscope.cn/mcp/servers/Vicious/agilex-docs) — search `agilex` (中文条目，标签 `机器人` / `机械臂` / `文档检索`) |
-| awesome-remote-mcp-servers | [PR #3724](https://github.com/punkpeye/awesome-remote-mcp-servers/pull/3724) |
-| MCP Hub 中国 | [issue #36](https://github.com/mengjian-github/mcp-cn/issues/36) |
+| Directory | Status | Direct link |
+|---|---|---|
+| **GitHub** | public, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
+| **ModelScope 魔搭** | listed | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
+| **Official MCP Registry** | `ai.agilex.service/docs` v1.0.2 | <https://registry.modelcontextprotocol.io/v0.1/servers?search=agilex> |
+| **Glama** | listed, TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
+| **awesome-remote-mcp-servers** | PR open | <https://github.com/punkpeye/awesome-remote-mcp-servers/pull/3724> |
+| **MCP Hub 中国** | submitted | <https://github.com/mengjian-github/mcp-cn/issues/36> |
+
+Search term inside any directory: `agilex` (or `agilex-docs`). On ModelScope the
+tags `机械臂` / `文档检索` also match.
 
 The endpoint is fixed, so no directory listing is required to use it.
 
