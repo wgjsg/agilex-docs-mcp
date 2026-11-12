@@ -373,11 +373,13 @@ failure mode here: a user could follow PiPER flashing steps on a PIKA.
 
 | | |
 |---|---|
-| Pages with content | **263** |
-| Of those, ≥500 chars of prose | 242 (`substantial` in `/health`; a length statistic, not a content check) |
-| Container / empty entries | 84 (excluded from search) |
-| Spaces | **26** |
-| Characters | ~3.0 M |
+| Documents | **655** (identical, space by space, to the "文档 N" counters a logged-in visitor sees) |
+| Pages with content | **619** |
+| Of those, ≥500 chars of prose | 498 (`substantial` in `/health`; a length statistic, not a content check) |
+| Container / empty entries | 36 (excluded from search) |
+| Group nodes (📁) | 121 (folder-only, not counted as documents — same rule as the KB UI) |
+| Spaces | **35** |
+| Characters | ~3.6 M |
 | Refresh | daily 05:20 Asia/Shanghai |
 | Languages | Chinese and English |
 
@@ -388,7 +390,10 @@ listable through `list_docs`, and `get_doc` on one returns `empty: true` with a 
 rather than 0 characters.
 
 New public spaces are added automatically; withdrawn shares are removed on the
-next refresh.
+next refresh. The nightly job also diffs the index against the spaces a logged-in
+visitor can read and fails loudly (`missing_shares` in `snapshot.json`) when a
+space is readable but not shared — that drift is how eight spaces / 137 pages went
+missing until the 2026-11-11 audit.
 
 ---
 
@@ -458,13 +463,22 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 | Directory | Entry | Link |
 |---|---|---|
 | **ModelScope 魔搭** | Chinese listing, Cursor one-click install | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
-| **Official MCP Registry** | `ai.agilex.service/docs` v1.2.1 | <https://registry.modelcontextprotocol.io/?q=agilex> |
+| **Official MCP Registry** | `ai.agilex.service/docs` v1.3.0 | <https://registry.modelcontextprotocol.io/?q=agilex> |
 | **Glama** | TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
 | **GitHub** | this repository, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
 
 Search term inside any directory: `agilex`.
 
 The endpoint is fixed, so no directory listing is required to use it.
+
+## Usage statistics
+
+Live call statistics for this service: <https://service.agilex.ai/agilex-docs/stats>
+
+Trends, per-tool share, most-read documents, and a filtered call log. Aggregates
+only — source IPs are not published, and no conversation content is retained
+(MCP does not transport it; the closest observable signal is the tool argument,
+shown as "query / intent").
 
 ---
 

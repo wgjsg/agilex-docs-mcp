@@ -15,12 +15,12 @@ https://service.agilex.ai/agilex-docs/mcp
 | 传输 | Streamable HTTP（单端点、无状态） |
 | 认证 | 无需认证、无需 API Key |
 | 限流 | 每 IP 每分钟 60 次、每天 3000 次 |
-| 数据范围 | 仅公开可访问的文档，不含内部资料 |
+| 数据范围 | 与松灵知识库「访客登录」后可见的公开内容逐篇一致，不含内部资料 |
 | 更新 | 每日 05:20（北京时间）自动更新 |
 
 ## 覆盖内容
 
-263 篇有正文的公开文档（其中 242 篇正文超过 500 字符，仅表示文本较充实，不代表内容已核验）、26 个空间；另有 84 个目录页或尚未编写的条目，不参与检索。覆盖以下产品线：
+655 篇公开文档（619 篇有正文，其中 498 篇正文超过 500 字符；另有 36 个目录页或尚未编写的条目不参与检索）、35 个空间。计数口径与知识库卡片上的「文档 N」一致：只算文档，不算 121 个 📁 分组目录。范围与松灵知识库「访客登录」后可见的内容逐篇一致，标注「内部」「非对外」的空间不在其中。覆盖以下产品线：
 
 `piper` · `pika` · `nero` · `ranger` · `limo` · `scout` · `bunker` · `hunter` · `tracer` · `umr` · `cobot_magic` · `aloha`
 
@@ -172,6 +172,7 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 ## 相关链接
 
 - 说明页：<https://service.agilex.ai/agilex-docs/>
+- 调用统计：<https://service.agilex.ai/agilex-docs/stats>
 - ModelScope 魔搭：<https://modelscope.cn/mcp/servers/Vicious/agilex-docs>
-- 官方 MCP Registry：`ai.agilex.service/docs`（v1.2.1）
+- 官方 MCP Registry：`ai.agilex.service/docs`（v1.3.0）
 - 公开仓库：<https://github.com/wgjsg/agilex-docs-mcp>
