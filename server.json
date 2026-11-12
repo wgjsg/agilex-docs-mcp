@@ -3,7 +3,7 @@
   "name": "ai.agilex.service/docs",
   "title": "AGILEX Docs",
   "description": "Official AGILEX robotics product docs: manuals, CAN protocol, firmware, FAQ. Read-only.",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "websiteUrl": "https://service.agilex.ai/agilex-docs/",
   "repository": {
     "url": "https://github.com/wgjsg/agilex-docs-mcp",
