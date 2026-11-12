@@ -463,7 +463,7 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 | Directory | Entry | Link |
 |---|---|---|
 | **ModelScope 魔搭** | Chinese listing, Cursor one-click install | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
-| **Official MCP Registry** | `ai.agilex.service/docs` v1.4.0 | <https://registry.modelcontextprotocol.io/?q=agilex> |
+| **Official MCP Registry** | `ai.agilex.service/docs` v1.4.1 | <https://registry.modelcontextprotocol.io/?q=agilex> |
 | **Glama** | TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
 | **GitHub** | this repository, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
 
@@ -479,11 +479,11 @@ The console is **invite-only** — email and password, no guest access. Any memb
 can invite others from the Members page; the invitation email carries a
 single-use link to set a password.
 
-Trends, per-tool share, most-read documents, and a filtered call log. "Query"
-is the user's own wording when the integration passes it via `X-MCP-Query`
-(otherwise the closest preceding search in the same session, labelled as such);
-"intent" is the tool argument the server actually received. MCP does not
-transport the user's message, so the two are never conflated.
+Trends, per-tool share, most-read documents, and a filtered call log. The
+"query / intent" column is the tool argument the server actually received —
+MCP does not transport the user's message, so it is not the user's own words.
+A caller that wants its wording recorded can send `X-MCP-Query`; it lands in
+the CSV export rather than the table.
 
 ---
 
