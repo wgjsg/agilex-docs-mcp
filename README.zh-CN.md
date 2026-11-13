@@ -50,8 +50,8 @@ https://service.agilex.ai/agilex-docs/mcp
 `list_docs` 的 `count` 则是本次返回条数。数值参数在 schema 里带范围（`limit` 1–25 /
 1–10 / 1–300，`max_chars` 1–120000，`offset` ≥ 0），越界是校验错误而不是静默截断。
 
-标题带「未发 / 暂不对外」标记的条目仍可检索（是否对外由资料负责人决定），
-结果会附 `status_note`，以免把未发布内容当作定稿引用。
+标题带「未发 / 暂不对外 / 内部 / 草稿」标记的条目**不提供正文**：检索结果里不会出现，
+`get_doc` 只返回标题、空间与链接，正文为空并附 `unpublished: true`。这类资料请走知识库内部渠道。
 
 推荐路径：`search_docs` 拿到 `doc_id` → 用 `find_in_doc` 定位到该文档里的相关段落
 （`query` 传概念词，不要重复产品名）→ `get_doc(doc_id, offset=…)` 读那一段。
@@ -174,5 +174,5 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 - 说明页：<https://service.agilex.ai/agilex-docs/>
 - 调用统计：<https://service.agilex.ai/agilex-docs/stats>（仅限受邀成员，邮箱登录）
 - ModelScope 魔搭：<https://modelscope.cn/mcp/servers/Vicious/agilex-docs>
-- 官方 MCP Registry：`ai.agilex.service/docs`（v1.7.3）
+- 官方 MCP Registry：`ai.agilex.service/docs`（v1.8.0）
 - 公开仓库：<https://github.com/wgjsg/agilex-docs-mcp>
