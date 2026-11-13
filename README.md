@@ -463,7 +463,7 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 | Directory | Entry | Link |
 |---|---|---|
 | **ModelScope 魔搭** | Chinese listing, Cursor one-click install | <https://modelscope.cn/mcp/servers/Vicious/agilex-docs> |
-| **Official MCP Registry** | `ai.agilex.service/docs` v1.6.2 | <https://registry.modelcontextprotocol.io/?q=agilex> |
+| **Official MCP Registry** | `ai.agilex.service/docs` v1.7.0 | <https://registry.modelcontextprotocol.io/?q=agilex> |
 | **Glama** | TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
 | **GitHub** | this repository, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
 
