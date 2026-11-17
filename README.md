@@ -466,6 +466,7 @@ scripts/smoke-test.sh        end-to-end check against the live endpoint
 | **Official MCP Registry** | `ai.agilex.service/docs` v1.8.0 | <https://registry.modelcontextprotocol.io/?q=agilex> |
 | **Glama** | TDQS **A (4.3/5)** | <https://glama.ai/mcp/connectors/ai.agilex.service/docs> |
 | **GitHub** | this repository, MIT | <https://github.com/wgjsg/agilex-docs-mcp> |
+| **awesome-remote-mcp-servers** | listed under Developer Tools (merged 2026-11-17) | <https://github.com/punkpeye/awesome-remote-mcp-servers> |
 
 Search term inside any directory: `agilex`.
 
