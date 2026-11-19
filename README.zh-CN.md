@@ -174,6 +174,6 @@ url = "https://service.agilex.ai/agilex-docs/mcp"
 - 说明页：<https://service.agilex.ai/agilex-docs/>
 - 调用统计：<https://service.agilex.ai/agilex-docs/stats>（仅限受邀成员，邮箱登录）
 - ModelScope 魔搭：<https://modelscope.cn/mcp/servers/Vicious/agilex-docs>
-- 官方 MCP Registry：`ai.agilex.service/docs`（v1.9.1）
+- 官方 MCP Registry：`ai.agilex.service/docs`（v1.9.2）
 - 公开仓库：<https://github.com/wgjsg/agilex-docs-mcp>
 - awesome-remote-mcp-servers：Developer Tools 段（2026-11-17 收录）
